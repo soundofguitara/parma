@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LDM Groupe - Suivi de Vignettage</title>
+    <meta name="description" content="Application de suivi du vignettage manuel des médicaments pour LDM Groupe" />
+    <meta name="author" content="LDM Groupe" />
+
+    <meta property="og:title" content="LDM Groupe - Suivi de Vignettage" />
+    <meta property="og:description" content="Application de suivi du vignettage manuel des médicaments pour LDM Groupe" />
+    <meta property="og:type" content="website" />
+    <script type="module" crossorigin src="/assets/main-Bh4wCWig.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/index.esm-CibJkt0i.js">
+    <link rel="stylesheet" crossorigin href="/assets/main-DiFij4wL.css">
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+      // Enregistrement du service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker enregistré avec succès:', registration.scope);
+            })
+            .catch(error => {
+              console.log('Échec de l\'enregistrement du Service Worker:', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
