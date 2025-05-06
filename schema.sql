@@ -48,14 +48,23 @@ create table performances (
 -- Table des anomalies
 create table anomalies (
   id uuid primary key default gen_random_uuid(),
-  assignment_id uuid not null references assignments(id) on delete cascade,
+  assignment_id uuid references assignments(id) on delete set null,
   batch_id uuid not null references batches(id) on delete cascade,
   operator_id uuid not null references operators(id),
   type text not null check (type in ('damaged_box', 'empty_case', 'missing_from_original', 'other')),
   quantity int not null,
   description text,
   detection_date timestamptz not null default now(),
-  deviation_number text
+  deviation_number text,
+  status text not null default 'pending' check (status in ('pending', 'in-progress', 'resolved')),
+  resolution_date timestamptz,
+  resolution_notes text,
+  remaining_quantity int,
+  sap_declared boolean default false,
+  deviation_created boolean default false,
+  moved_to_hold boolean default false,
+  pf_manager_informed boolean default false,
+  qa_informed boolean default false
 );
 
 -- Table pour la planification
@@ -64,8 +73,21 @@ create table planning (
   batch_id uuid not null references batches(id) on delete cascade,
   planned_start_date date not null,
   planned_end_date date not null,
+  actual_start_date date,
+  actual_end_date date,
   required_operators int not null,
+  assigned_operators int not null default 0,
   priority int not null default 1,
+  progress int not null default 0, -- pourcentage d'avancement
+  status text not null default 'planned' check (status in ('planned', 'in-progress', 'completed', 'delayed', 'cancelled')),
   notes text
+);
+
+-- Table des médicaments
+create table medications (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
