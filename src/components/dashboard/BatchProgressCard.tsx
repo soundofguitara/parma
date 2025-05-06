@@ -1,12 +1,14 @@
 
 import React from 'react';
-import { Clock, Edit, Trash } from 'lucide-react';
+import { Clock, Edit, Trash, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Batch } from '@/types';
 import { cn } from '@/lib/utils';
 import ProgressDonut from '@/components/dashboard/ProgressDonut';
 import { Button } from '@/components/ui/button';
 import { useDeleteBatch } from '@/hooks/useBatches';
 import { toast } from '@/hooks/use-toast';
+import { useBatchAnomalies, hasDeviations, getTotalAffectedQuantity, getDeviationNumbers } from '@/hooks/useBatchAnomalies';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BatchProgressCardProps {
   batch: Batch;
@@ -22,6 +24,18 @@ const BatchProgressCard = ({ batch, onEdit }: BatchProgressCardProps) => {
     ? Math.round((totalProcessedByAssignments / batch.totalBoxes) * 100)
     : 0;
   const { mutateAsync: deleteBatch } = useDeleteBatch();
+
+  // Récupérer les anomalies liées à ce lot
+  const { data: anomalies = [], isLoading: isLoadingAnomalies } = useBatchAnomalies(batch.id);
+
+  // Vérifier si le lot a des déviations
+  const batchHasDeviations = hasDeviations(anomalies);
+
+  // Calculer la quantité totale affectée par les anomalies
+  const totalAffectedQuantity = getTotalAffectedQuantity(anomalies);
+
+  // Récupérer les numéros de déviation
+  const deviationNumbers = getDeviationNumbers(anomalies);
 
   const getStatusColor = (status: Batch['status']) => {
     switch (status) {
@@ -102,16 +116,61 @@ const BatchProgressCard = ({ batch, onEdit }: BatchProgressCardProps) => {
         </div>
       </div>
 
+      {/* Affichage des informations sur les déviations */}
+      {batchHasDeviations && (
+        <div className="mb-3 mt-1 bg-pharma-blue-dark/40 p-2 rounded-md">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle size={16} className="text-yellow-500" />
+            <span className="text-yellow-500 text-sm font-medium">Déviation signalée</span>
+          </div>
+          <div className="text-xs text-pharma-text-light">
+            <div className="flex justify-between mb-1">
+              <span>Quantité impactée:</span>
+              <span className="text-white font-medium">{totalAffectedQuantity} boîtes</span>
+            </div>
+            {deviationNumbers.length > 0 && (
+              <div className="flex justify-between">
+                <span>N° de déviation:</span>
+                <span className="text-white font-medium">
+                  {deviationNumbers.join(', ')}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Cercle de progression */}
       <div className="flex justify-center items-center my-4">
-        <ProgressDonut 
-          value={progress}
-          colors={{
-            background: '#2A3042',
-            fill: getStatusColor(batch.status)
-          }}
-          size="sm"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <ProgressDonut
+                  value={progress}
+                  colors={{
+                    background: '#2A3042',
+                    fill: getStatusColor(batch.status)
+                  }}
+                  size="sm"
+                />
+                {batchHasDeviations && !isLoadingAnomalies && (
+                  <div className="relative">
+                    <div className="absolute -top-8 -right-2">
+                      <AlertCircle size={16} className="text-yellow-500" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TooltipTrigger>
+            {batchHasDeviations && (
+              <TooltipContent side="top">
+                <p className="text-xs">Ce lot a {anomalies.length} anomalie(s) signalée(s)</p>
+                <p className="text-xs">Quantité impactée: {totalAffectedQuantity} boîtes</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
@@ -130,20 +189,20 @@ const BatchProgressCard = ({ batch, onEdit }: BatchProgressCardProps) => {
           </div>
         )}
       </div>
-      
+
       {/* Boutons d'actions */}
       <div className="mt-4 flex justify-end gap-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => onEdit(batch)}
           className="text-pharma-text-light hover:text-white"
         >
           <Edit size={16} />
         </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleDelete}
           className="text-pharma-text-light hover:text-pharma-accent-red"
         >

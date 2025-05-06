@@ -35,7 +35,7 @@ const Dashboard = () => {
       return sum + (end.getTime() - start.getTime()) / (1000 * 60);
     }, 0);
 
-    const averageBoxesPerHour = totalTimeSpentMinutes > 0 
+    const averageBoxesPerHour = totalTimeSpentMinutes > 0
       ? Math.round((processedBoxes / totalTimeSpentMinutes) * 60)
       : 0;
 
@@ -76,7 +76,7 @@ const Dashboard = () => {
       },
       performance: {
         averageBoxesPerHour,
-        mostEfficientOperator: operators.length > 0 
+        mostEfficientOperator: operators.length > 0
           ? operators.reduce((max, op) => op.productivity > (max?.productivity || 0) ? op : max, operators[0]).name
           : 'N/A'
       },
@@ -88,7 +88,7 @@ const Dashboard = () => {
   const productivityTrend = Array.from({ length: 10 }, (_, i) => ({
     value: 75 + Math.random() * 20
   }));
-  
+
   const completionTrend = Array.from({ length: 10 }, (_, i) => ({
     value: 50 + i * 5 + Math.random() * 5
   }));
@@ -98,7 +98,7 @@ const Dashboard = () => {
     setEditModalOpen(true);
   };
 
-  const activeBatches = useMemo(() => 
+  const activeBatches = useMemo(() =>
     batches.filter(b => b.status === 'in-progress')
   , [batches]);
 
@@ -121,32 +121,32 @@ const Dashboard = () => {
 
       {/* Stats overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Lots actifs" 
-          value={dashboardStats.activeBatches} 
+        <StatCard
+          title="Lots actifs"
+          value={dashboardStats.activeBatches}
           icon={<Package size={20} />}
           trend={{ value: 20, isPositive: true, label: "vs sem. dernière" }}
           chart={<TrendLine data={productivityTrend} color="#0EA5E9" />}
         />
-        
-        <StatCard 
-          title="Boîtes traitées" 
-          value={dashboardStats.processedBoxes.toLocaleString()} 
+
+        <StatCard
+          title="Boîtes traitées"
+          value={dashboardStats.processedBoxes.toLocaleString()}
           secondaryValue={`${dashboardStats.completionRate}% complété`}
           icon={<Box size={20} />}
           chart={<ProgressDonut value={Math.round(dashboardStats.completionRate)} size="sm" />}
         />
-        
-        <StatCard 
-          title="Opérateurs actifs" 
-          value={dashboardStats.operators.active} 
+
+        <StatCard
+          title="Opérateurs actifs"
+          value={dashboardStats.operators.active}
           secondaryValue={`sur ${dashboardStats.operators.total} opérateurs`}
           icon={<Users size={20} />}
         />
-        
-        <StatCard 
-          title="Vitesse moyenne" 
-          value={`${dashboardStats.performance.averageBoxesPerHour} boîtes/h`} 
+
+        <StatCard
+          title="Vitesse moyenne"
+          value={`${dashboardStats.performance.averageBoxesPerHour} boîtes/h`}
           trend={{ value: 5, isPositive: true }}
           icon={<Activity size={20} />}
         />
@@ -165,8 +165,8 @@ const Dashboard = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activeBatches.map(batch => (
-                <BatchProgressCard 
-                  key={batch.id} 
+                <BatchProgressCard
+                  key={batch.id}
                   batch={{
                     ...batch,
                     medicationName: batch.medicationName || batch.medication_name || '',
@@ -180,17 +180,17 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-          
+
           <PerformanceChart data={operators} />
         </div>
-        
+
         {/* Right column with stats */}
         <div className="space-y-6">
           <div className="bg-pharma-blue-light rounded-lg p-4">
             <h2 className="text-white text-lg font-medium mb-4">Progression globale</h2>
             <div className="flex flex-col items-center">
-              <ProgressDonut 
-                value={Math.round(dashboardStats.completionRate)} 
+              <ProgressDonut
+                value={Math.round(dashboardStats.completionRate)}
                 size="lg"
                 colors={{ background: '#2A3042', fill: '#22C55E' }}
               />
@@ -204,14 +204,14 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <BatchStatusPie data={dashboardStats.batchStatus} />
-          
+
           {/* New Report Download Section */}
           <ReportDownload />
         </div>
       </div>
-      
+
       {/* Operator performance section */}
       <div className="bg-pharma-blue-light rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
@@ -220,7 +220,7 @@ const Dashboard = () => {
             Voir tous les opérateurs
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {operators
             .sort((a, b) => b.efficiency - a.efficiency)
@@ -245,7 +245,7 @@ const Dashboard = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div className="text-center p-2 bg-pharma-blue-dark/30 rounded">
                     <p className="text-pharma-text-muted text-xs">Vitesse</p>

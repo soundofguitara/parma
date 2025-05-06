@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -14,7 +13,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Supabase environment variables missing.");
 }
 
-// On utilise uniquement les variables d'environement (plus de valeurs par défaut !)
-// Cela évite toute mauvaise connexion si jamais accidentellement les valeurs sont absentes
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Configuration des options de persistance pour une session de 24 heures
+const persistSessionOptions = {
+  persistSession: true,
+  autoRefreshToken: true,
+  // Définir la durée de vie du cookie à 24 heures (en secondes)
+  cookieOptions: {
+    maxAge: 86400, // 24 heures en secondes
+    sameSite: 'lax' as 'lax',
+    secure: typeof window !== 'undefined' ? window.location.protocol === 'https:' : false
+  }
+};
 
+// On utilise uniquement les variables d'environement avec les options de persistance
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: persistSessionOptions
+});

@@ -55,6 +55,17 @@ const PerformanceChart = ({ data }: PerformanceChartProps) => {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      {/* Légende explicative des couleurs */}
+      <div className="mt-4 flex gap-6 items-center">
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-4 h-4 rounded" style={{ background: '#0EA5E9' }}></span>
+          <span className="text-pharma-text-light">Bleu : Productivité</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-4 h-4 rounded" style={{ background: '#22C55E' }}></span>
+          <span className="text-pharma-text-light">Vert : Efficacité</span>
+        </div>
+      </div>
     </div>
   );
 };

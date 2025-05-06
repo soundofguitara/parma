@@ -20,8 +20,13 @@ interface PlanningFormProps {
     batchId: string;
     plannedStartDate: string;
     plannedEndDate: string;
+    actualStartDate?: string;
+    actualEndDate?: string;
     requiredOperators: number;
+    assignedOperators?: number;
     priority: number;
+    progress?: number;
+    status?: string;
     notes: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
@@ -53,18 +58,34 @@ export const PlanningForm = ({
             <SelectValue placeholder="Sélectionner un lot" />
           </SelectTrigger>
           <SelectContent>
-            {batches?.map((batch) => (
-              <SelectItem key={batch.id} value={batch.id}>
-                {`${batch.code} - ${batch.medicationName || ''}`}
+            {batches?.length > 0 ? (
+              batches.map((batch) => (
+                <SelectItem key={batch.id} value={batch.id}>
+                  {`${batch.code} - ${batch.medicationName || ''}`}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="" disabled>
+                Aucun lot disponible pour planification
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
+        {!isEditing && batches?.length === 0 && (
+          <p className="text-xs text-yellow-500 mt-1">
+            Tous les lots sont déjà planifiés ou terminés. Veuillez ajouter un nouveau lot.
+          </p>
+        )}
+        {!isEditing && batches?.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Seuls les lots non planifiés et non terminés sont disponibles.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="plannedStartDate">Date de début</Label>
+          <Label htmlFor="plannedStartDate">Date de début prévue</Label>
           <Input
             type="date"
             id="plannedStartDate"
@@ -75,7 +96,7 @@ export const PlanningForm = ({
           />
         </div>
         <div>
-          <Label htmlFor="plannedEndDate">Date de fin</Label>
+          <Label htmlFor="plannedEndDate">Date de fin prévue</Label>
           <Input
             type="date"
             id="plannedEndDate"
@@ -86,6 +107,31 @@ export const PlanningForm = ({
           />
         </div>
       </div>
+
+      {isEditing && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="actualStartDate">Date de début réelle</Label>
+            <Input
+              type="date"
+              id="actualStartDate"
+              name="actualStartDate"
+              value={form.actualStartDate || ''}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <Label htmlFor="actualEndDate">Date de fin réelle</Label>
+            <Input
+              type="date"
+              id="actualEndDate"
+              name="actualEndDate"
+              value={form.actualEndDate || ''}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -118,6 +164,56 @@ export const PlanningForm = ({
           </Select>
         </div>
       </div>
+
+      {isEditing && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="assignedOperators">Opérateurs assignés</Label>
+            <Input
+              type="number"
+              id="assignedOperators"
+              name="assignedOperators"
+              min={0}
+              value={form.assignedOperators || 0}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <Label htmlFor="progress">Progression (%)</Label>
+            <Input
+              type="number"
+              id="progress"
+              name="progress"
+              min={0}
+              max={100}
+              value={form.progress || 0}
+              onChange={handleChange}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {isEditing && (
+        <div>
+          <Label htmlFor="status">Statut</Label>
+          <Select
+            value={form.status || 'planned'}
+            onValueChange={(value) => handleChange({ target: { name: 'status', value } } as any)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner le statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="planned">Planifié</SelectItem>
+              <SelectItem value="in-progress">En cours</SelectItem>
+              <SelectItem value="completed">Terminé</SelectItem>
+              <SelectItem value="delayed">En retard</SelectItem>
+              <SelectItem value="cancelled">Annulé</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div>
         <Label htmlFor="notes">Notes</Label>

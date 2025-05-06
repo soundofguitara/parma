@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useGenerateReport, ReportParams } from '@/hooks/useReports';
 
-type ReportType = 'productivity' | 'batches' | 'operators';
+type ReportType = 'productivity' | 'batches' | 'operators' | 'anomalies' | 'planning' | 'performance' | 'deadlines';
 type ReportFormat = 'excel' | 'pdf';
 type PeriodType = 'custom' | 'month' | 'quarter' | 'year';
 
@@ -43,13 +43,16 @@ const ReportDownload = () => {
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
-  
+  const [includeCharts, setIncludeCharts] = useState<boolean>(true);
+  const [includeStats, setIncludeStats] = useState<boolean>(true);
+  const [groupBy, setGroupBy] = useState<string>('day');
+
   const { mutateAsync: generateReport, isPending } = useGenerateReport();
 
   const handlePeriodChange = (value: PeriodType) => {
     setPeriodType(value);
     const today = new Date();
-    
+
     switch(value) {
       case 'month':
         setDateRange({
@@ -79,35 +82,49 @@ const ReportDownload = () => {
         type: reportType,
         format: reportFormat,
         dateFrom: dateRange.from,
-        dateTo: dateRange.to
+        dateTo: dateRange.to,
+        includeCharts,
+        includeStats,
+        groupBy: groupBy as 'day' | 'week' | 'month' | 'operator' | 'batch'
       };
-      
+
       // Notification du début du téléchargement
       toast({
         title: "Génération du rapport en cours",
         description: "Veuillez patienter pendant que nous préparons votre rapport...",
       });
-      
+
       // Appel à la fonction de génération du rapport
       await generateReport(reportParams);
-      
+
     } catch (error) {
       console.error("Erreur lors de la génération du rapport:", error);
+
+      toast({
+        variant: "destructive",
+        title: "Erreur de génération du rapport",
+        description: error instanceof Error ? error.message : "Une erreur s'est produite lors de la génération du rapport.",
+      });
     }
   };
 
   const formatDisplayText = () => {
-    const reportTypeText = 
-      reportType === 'productivity' ? 'Productivité' : 
-      reportType === 'batches' ? 'Lots' : 'Opérateurs';
-      
+    const reportTypeText =
+      reportType === 'productivity' ? 'Productivité' :
+      reportType === 'batches' ? 'Lots' :
+      reportType === 'operators' ? 'Opérateurs' :
+      reportType === 'anomalies' ? 'Anomalies' :
+      reportType === 'planning' ? 'Planification' :
+      reportType === 'performance' ? 'Performance détaillée' :
+      'Suivi des délais';
+
     return `${reportTypeText} (${format(dateRange.from, 'dd/MM/yyyy')} - ${format(dateRange.to, 'dd/MM/yyyy')})`;
   };
 
   return (
     <div className="bg-pharma-blue-light rounded-lg p-4">
       <h2 className="text-white text-lg font-medium mb-4">Télécharger un rapport</h2>
-      
+
       <div className="space-y-4">
         {/* Type de rapport */}
         <div>
@@ -120,10 +137,14 @@ const ReportDownload = () => {
               <SelectItem value="productivity">Rapport de productivité</SelectItem>
               <SelectItem value="batches">Rapport des lots</SelectItem>
               <SelectItem value="operators">Rapport des opérateurs</SelectItem>
+              <SelectItem value="anomalies">Rapport des anomalies</SelectItem>
+              <SelectItem value="planning">Rapport de planification</SelectItem>
+              <SelectItem value="performance">Rapport de performance détaillé</SelectItem>
+              <SelectItem value="deadlines">Rapport de suivi des délais</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        
+
         {/* Période */}
         <div>
           <label className="text-pharma-text-light text-sm mb-1 block">Période</label>
@@ -139,7 +160,7 @@ const ReportDownload = () => {
                 <SelectItem value="custom">Personnalisé</SelectItem>
               </SelectContent>
             </Select>
-            
+
             {periodType === 'custom' && (
               <Popover>
                 <PopoverTrigger asChild>
@@ -176,7 +197,7 @@ const ReportDownload = () => {
             )}
           </div>
         </div>
-        
+
         {/* Format de fichier */}
         <div>
           <label className="text-pharma-text-light text-sm mb-1 block">Format de fichier</label>
@@ -206,7 +227,56 @@ const ReportDownload = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
+        {/* Options supplémentaires */}
+        <div>
+          <label className="text-pharma-text-light text-sm mb-1 block">Options supplémentaires</label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center space-x-2 bg-pharma-blue-dark/40 p-2 rounded">
+              <input
+                type="checkbox"
+                id="includeCharts"
+                checked={includeCharts}
+                onChange={(e) => setIncludeCharts(e.target.checked)}
+                className="rounded border-pharma-blue-dark bg-pharma-blue-dark/20 text-pharma-accent-blue"
+              />
+              <label htmlFor="includeCharts" className="text-pharma-text-light text-sm cursor-pointer">
+                Inclure les graphiques
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-2 bg-pharma-blue-dark/40 p-2 rounded">
+              <input
+                type="checkbox"
+                id="includeStats"
+                checked={includeStats}
+                onChange={(e) => setIncludeStats(e.target.checked)}
+                className="rounded border-pharma-blue-dark bg-pharma-blue-dark/20 text-pharma-accent-blue"
+              />
+              <label htmlFor="includeStats" className="text-pharma-text-light text-sm cursor-pointer">
+                Inclure les statistiques
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Regroupement */}
+        <div>
+          <label className="text-pharma-text-light text-sm mb-1 block">Regrouper par</label>
+          <Select value={groupBy} onValueChange={setGroupBy}>
+            <SelectTrigger className="bg-pharma-blue-dark border-pharma-blue-dark text-white w-full">
+              <SelectValue placeholder="Sélectionnez un regroupement" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="day">Jour</SelectItem>
+              <SelectItem value="week">Semaine</SelectItem>
+              <SelectItem value="month">Mois</SelectItem>
+              <SelectItem value="operator">Opérateur</SelectItem>
+              <SelectItem value="batch">Lot</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Aperçu */}
         <div className="bg-pharma-blue-dark/40 p-3 rounded text-pharma-text-light text-sm">
           <div className="flex items-center mb-1">
@@ -215,10 +285,10 @@ const ReportDownload = () => {
           </div>
           <p>{formatDisplayText()}</p>
         </div>
-        
+
         {/* Bouton de téléchargement */}
-        <Button 
-          onClick={handleDownload} 
+        <Button
+          onClick={handleDownload}
           className="w-full bg-pharma-accent-blue hover:bg-pharma-accent-blue/80"
           disabled={isPending}
         >

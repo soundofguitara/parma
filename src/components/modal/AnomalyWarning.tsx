@@ -5,10 +5,10 @@ import { AlertTriangle } from "lucide-react";
 
 const AnomalyWarning = () => {
   return (
-    <Alert variant="destructive" className="mb-4">
+    <Alert variant="destructive" className="mb-4 max-w-full">
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription>
-        Si vous constatez des anomalies, utilisez le bouton ci-dessous pour les signaler.
+        Si vous constatez des anomalies, veuillez les signaler dans le module dédié "Anomalies".
       </AlertDescription>
     </Alert>
   );
